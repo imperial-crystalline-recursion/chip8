@@ -1,0 +1,3 @@
+rootProject.name = 'chip8'
+include 'chiplib'
+
