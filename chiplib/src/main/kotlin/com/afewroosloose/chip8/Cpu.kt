@@ -24,14 +24,14 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
             1 -> {
                 when {
                     (operation and 0x1000 != 0) -> { // jp
-                        return Jump((operation xor 0x1000).toShort())
+                        return Jump((operation xor 0x1000).toUShort())
                     }
                 }
             }
 
             2 -> {
                 val address = operation and 0xFFF
-                return Call(address.toShort())
+                return Call(address.toUShort())
             }
 
             3 -> {
@@ -137,11 +137,11 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
 
             0xA -> {
                 val value = operation and 0xFFF
-                return SetI(value.toShort())
+                return SetI(value.toUShort())
             }
 
             0xB -> {
-                val address = (operation and 0xFFF).toShort()
+                val address = (operation and 0xFFF).toUShort()
                 return JumpOffsetV0(address)
             }
 
@@ -156,15 +156,39 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
             }
 
             0xE -> {
-                val key = operation shr 8 and 0x0F
-                val operationType = operation and 0xFF
-                when (operationType) {
+                val x = operation shr 8 and 0x0F
+                when (operation and 0xFF) {
                     0x9E -> {
-                        return SkipIfKeyVxIsPressed(key, keyboard.getPressedKey())
+                        return SkipIfKeyVxIsPressed(x, keyboard.getPressedKey())
                     }
 
                     0xA1 -> {
-                        return SkipIfKeyVxIsNotPressed(key, keyboard.getPressedKey())
+                        return SkipIfKeyVxIsNotPressed(x, keyboard.getPressedKey())
+                    }
+                }
+            }
+
+            0xF -> {
+                val x = operation shr 8 and 0x0F
+                when (operation and 0xFF) {
+                    0x07 -> {
+                        // set vx the timer delay value
+                        return SetVxToDelayTimer(x)
+                    }
+
+                    0x0A -> {
+                        // wait for keypress, store in Vx
+                        return WaitForKeyPressAndStoreInVx(x, keyboard)
+                    }
+                    0x15 -> {
+                        // set delay timer to Vx
+                        return SetDelayTimerToVx(x)
+                    }
+                    0x18 -> {
+                        return SetSoundTimerToVx(x)
+                    }
+                    0x1E -> {
+                        return AddVxToI(x)
                     }
                 }
             }

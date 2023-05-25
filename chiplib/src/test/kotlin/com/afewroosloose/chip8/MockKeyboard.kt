@@ -6,4 +6,9 @@ class MockKeyboard: Keyboard {
     override fun getPressedKey(): Chip8Key {
         return key
     }
+
+    override fun waitForKeyPress(): Chip8Key {
+        Thread.sleep(1000)
+        return key
+    }
 }

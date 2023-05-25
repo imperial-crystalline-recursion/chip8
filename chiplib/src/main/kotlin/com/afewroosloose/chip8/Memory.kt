@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package com.afewroosloose.chip8
 
 import kotlin.experimental.and
@@ -19,15 +21,15 @@ class Memory {
     private val registers = ByteArray(NUMBER_OF_REGISTERS) { 0 }
 
     // various registers
-    private var i: Short = 0 // used for storing memory adddresses
-    private var pc: Short = 0 // program counter
+    private var i: UShort = 0.toUShort() // used for storing memory adddresses
+    private var pc: UShort = 0.toUShort() // program counter
     private var sp: Byte = 0  // stack pointer
 
     private var dt: Byte = 0 // delay timer
     private var st: Byte = 0 // sound timer
 
-    private val stack2 = ArrayDeque<Short>()
-    private val stack = Array<Short>(16) { 0 }
+    private val stack2 = ArrayDeque<UShort>()
+    private val stack = Array<UShort>(16) { 0.toUShort() }
 
     fun load(byteArray: ByteArray) {
         if (byteArray.size > MEMORY_SIZE - PROGRAM_START) {
@@ -54,12 +56,12 @@ class Memory {
         }
     }
 
-    fun setProgramCounter(address: Short) {
+    fun setProgramCounter(address: UShort) {
         pc = address
     }
 
     fun getStackPointer() = sp
-    fun getProgramCounter(): Short = pc
+    fun getProgramCounter(): UShort = pc
 
     fun clearScreenBuffer() {
         // todo: clear screen buffer
@@ -69,7 +71,7 @@ class Memory {
         return Array<ByteArray>(8) { ByteArray(4) { 0 } }
     }
 
-    fun pushStack(value: Short) {
+    fun pushStack(value: UShort) {
         if (sp >= 16) {
             throw StackOverflowException()
         } else {
@@ -78,16 +80,27 @@ class Memory {
         }
     }
 
-    fun popStack(): Short {
+    fun popStack(): UShort {
         val value = stack2.removeLast()
         sp = (stack2.size - 1).toByte()
         if (sp < 0) sp = 0
         return value
     }
 
-    fun setI(value: Short) {
+    fun setI(value: UShort) {
         i = value
     }
 
-    fun getI() = i
+    fun getI(): UShort = i
+    fun getDelayTimer() = dt
+
+    fun setDelayTimer(value: Byte) {
+        dt = value
+    }
+
+    fun setSoundTimer(value: Byte) {
+        st = value
+    }
+
+    fun getSoundTimer() = st
 }

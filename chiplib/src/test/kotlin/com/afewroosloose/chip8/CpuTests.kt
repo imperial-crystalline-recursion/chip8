@@ -29,7 +29,7 @@ class CpuTests {
         operation.assertType<Jump>()
 
         operation!!.execute(memory)
-        assertEquals("The program counter is at 0x333", memory.getProgramCounter(), 0x333.toShort())
+        assertEquals("The program counter is at 0x333", memory.getProgramCounter(), 0x333.toUShort())
     }
 
     @Test
@@ -44,16 +44,16 @@ class CpuTests {
 
     @Test
     fun `test ret operation`() {
-        memory.pushStack(1)
-        memory.pushStack(2)
-        memory.pushStack(3)
+        memory.pushStack(1.toUShort())
+        memory.pushStack(2.toUShort())
+        memory.pushStack(3.toUShort())
 
         assertEquals(2.toByte(), memory.getStackPointer()) // we are pointing at frame 2
         val operation = cpu.interpretInstruction(0x00EE)
         operation.assertType<Ret>()
 
         operation!!.execute(memory)
-        assertEquals("We should now have 3 on the program counter, since that was the last thing added to the stack", 3.toShort(), memory.getProgramCounter())
+        assertEquals("We should now have 3 on the program counter, since that was the last thing added to the stack", 3.toUShort(), memory.getProgramCounter())
         assertEquals("Stack pointer should now point at 1", 1.toByte(), memory.getStackPointer())
     }
 
@@ -62,10 +62,10 @@ class CpuTests {
         val operation = cpu.interpretInstruction(0x2987)
         operation.assertType<Call>()
 
-        memory.setProgramCounter(5)
+        memory.setProgramCounter(5.toUShort())
         operation!!.execute(memory)
-        assertEquals(5.toShort(), memory.popStack())
-        assertEquals(0x987.toShort(), memory.getProgramCounter())
+        assertEquals(5.toUShort(), memory.popStack())
+        assertEquals(0x987.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -76,7 +76,7 @@ class CpuTests {
         operation.assertType<SkipNextIfEqual>()
 
         operation!!.execute(memory)
-        assertEquals(2.toShort(), memory.getProgramCounter())
+        assertEquals(2.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -87,7 +87,7 @@ class CpuTests {
         operation.assertType<SkipNextIfEqual>()
 
         operation!!.execute(memory)
-        assertEquals(0.toShort(), memory.getProgramCounter())
+        assertEquals(0.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -98,7 +98,7 @@ class CpuTests {
         operation.assertType<SkipNextIfNotEqual>()
 
         operation!!.execute(memory)
-        assertEquals(0.toShort(), memory.getProgramCounter())
+        assertEquals(0.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -109,7 +109,7 @@ class CpuTests {
         operation.assertType<SkipNextIfNotEqual>()
 
         operation!!.execute(memory)
-        assertEquals(2.toShort(), memory.getProgramCounter())
+        assertEquals(2.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -121,7 +121,7 @@ class CpuTests {
         operation.assertType<SkipIfVxEqualsVy>()
 
         operation!!.execute(memory)
-        assertEquals(2.toShort(), memory.getProgramCounter())
+        assertEquals(2.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -133,7 +133,7 @@ class CpuTests {
         operation.assertType<SkipIfVxEqualsVy>()
 
         operation!!.execute(memory)
-        assertEquals(0.toShort(), memory.getProgramCounter())
+        assertEquals(0.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -372,7 +372,7 @@ class CpuTests {
         operation.assertType<SkipIfVxAndVyNotEqual>()
 
         operation!!.execute(memory)
-        assertEquals(2.toShort(), memory.getProgramCounter())
+        assertEquals(2.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -384,7 +384,7 @@ class CpuTests {
         operation.assertType<SkipIfVxAndVyNotEqual>()
 
         operation!!.execute(memory)
-        assertEquals(0.toShort(), memory.getProgramCounter())
+        assertEquals(0.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -393,7 +393,7 @@ class CpuTests {
 
         operation.assertType<SetI>()
         operation!!.execute(memory)
-        assertEquals(0x333.toShort(), memory.getI())
+        assertEquals(0x333.toUShort(), memory.getI())
     }
 
     @Test
@@ -403,7 +403,7 @@ class CpuTests {
 
         operation.assertType<JumpOffsetV0>()
         operation!!.execute(memory)
-        assertEquals(0x334.toShort(), memory.getProgramCounter())
+        assertEquals(0x334.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -414,7 +414,7 @@ class CpuTests {
         operation.assertType<SkipIfKeyVxIsPressed>()
 
         operation!!.execute(memory)
-        assertEquals(2.toShort(), memory.getProgramCounter())
+        assertEquals(2.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -425,7 +425,7 @@ class CpuTests {
         operation.assertType<SkipIfKeyVxIsPressed>()
 
         operation!!.execute(memory)
-        assertEquals(0.toShort(), memory.getProgramCounter())
+        assertEquals(0.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -436,7 +436,7 @@ class CpuTests {
         operation.assertType<SkipIfKeyVxIsNotPressed>()
 
         operation!!.execute(memory)
-        assertEquals(2.toShort(), memory.getProgramCounter())
+        assertEquals(2.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -447,6 +447,71 @@ class CpuTests {
         operation.assertType<SkipIfKeyVxIsNotPressed>()
 
         operation!!.execute(memory)
-        assertEquals(0.toShort(), memory.getProgramCounter())
+        assertEquals(0.toUShort(), memory.getProgramCounter())
+    }
+
+    @Test
+    fun `test set vx as delay timer`() {
+        memory.setDelayTimer(100)
+        val operation = cpu.interpretInstruction(0xF207)
+        operation.assertType<SetVxToDelayTimer>()
+
+        operation!!.execute(memory)
+        assertEquals(100.toByte(), memory.getV(2))
+    }
+
+    @Test
+    fun `test wait for keypress and store in vx`() {
+        keyboard.key = Chip8Key.A
+        memory.setDelayTimer(100)
+        val operation = cpu.interpretInstruction(0xF20A)
+        operation.assertType<WaitForKeyPressAndStoreInVx>()
+
+        operation!!.execute(memory)
+        assertEquals(0xA.toByte(), memory.getV(2))
+    }
+
+    @Test
+    fun `test set delay timer to vx`() {
+        memory.setV(2, 55)
+        val operation = cpu.interpretInstruction(0xF215)
+        operation.assertType<SetDelayTimerToVx>()
+
+        operation!!.execute(memory)
+        assertEquals(55.toByte(), memory.getV(2))
+    }
+
+    @Test
+    fun `test set sound timer to vx`() {
+        memory.setV(2, 55)
+        val operation = cpu.interpretInstruction(0xF218)
+        operation.assertType<SetSoundTimerToVx>()
+
+        operation!!.execute(memory)
+        assertEquals(55.toByte(), memory.getSoundTimer())
+    }
+
+    @Test
+    fun `test add vx to i`() {
+        memory.setV(2, 1)
+        memory.setI(3.toUShort())
+        val operation = cpu.interpretInstruction(0xF21E)
+        operation.assertType<AddVxToI>()
+
+        operation!!.execute(memory)
+        assertEquals(4.toUShort(), memory.getI())
+        assertEquals(0.toByte(), memory.getV(0xF))
+    }
+
+    @Test
+    fun `test add vx to i, with overflow`() {
+        memory.setV(2, 1)
+        memory.setI(0xFFFF.toUShort())
+        val operation = cpu.interpretInstruction(0xF21E)
+        operation.assertType<AddVxToI>()
+
+        operation!!.execute(memory)
+        assertEquals(0.toShort(), memory.getI())
+        assertEquals(1.toByte(), memory.getV(0xF))
     }
 }

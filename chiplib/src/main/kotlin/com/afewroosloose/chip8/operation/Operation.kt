@@ -3,6 +3,8 @@
 package com.afewroosloose.chip8.operation
 
 import com.afewroosloose.chip8.Chip8Key
+import com.afewroosloose.chip8.Cpu
+import com.afewroosloose.chip8.Keyboard
 import com.afewroosloose.chip8.Memory
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -15,13 +17,13 @@ interface Operation {
 
 interface JumpingOperation
 
-class Jump(private val address: Short) : Operation, JumpingOperation {
+class Jump(private val address: UShort) : Operation, JumpingOperation {
     override fun execute(memory: Memory) {
         memory.setProgramCounter(address)
     }
 }
 
-class Sys(private val address: Short) : Operation {
+class Sys(private val address: UShort) : Operation {
     override fun execute(memory: Memory) {
         TODO("Not yet implemented")
     }
@@ -40,7 +42,7 @@ class Ret : Operation {
     }
 }
 
-class Call(private val address: Short) : Operation, JumpingOperation {
+class Call(private val address: UShort) : Operation, JumpingOperation {
     override fun execute(memory: Memory) {
         memory.pushStack(memory.getProgramCounter())
         memory.setProgramCounter(address)
@@ -51,7 +53,7 @@ class SkipNextIfEqual(private val value: Byte, private val register: Int) : Oper
     override fun execute(memory: Memory) {
         val registerValue = memory.getV(register)
         if (registerValue == value) {
-            memory.setProgramCounter((memory.getProgramCounter() + 2).toShort())
+            memory.setProgramCounter((memory.getProgramCounter() + 2.toUShort()).toUShort())
         }
     }
 }
@@ -60,7 +62,7 @@ class SkipNextIfNotEqual(private val value: Byte, private val register: Int) : O
     override fun execute(memory: Memory) {
         val registerValue = memory.getV(register)
         if (registerValue != value) {
-            memory.setProgramCounter((memory.getProgramCounter() + 2).toShort())
+            memory.setProgramCounter((memory.getProgramCounter() + 2.toUShort()).toUShort())
         }
     }
 }
@@ -68,7 +70,7 @@ class SkipNextIfNotEqual(private val value: Byte, private val register: Int) : O
 class SkipIfVxEqualsVy(private val x: Int, private val y: Int) : Operation {
     override fun execute(memory: Memory) {
         if (memory.getV(x) == memory.getV(y)) {
-            memory.setProgramCounter((memory.getProgramCounter() + 2).toShort())
+            memory.setProgramCounter((memory.getProgramCounter() + 2.toUShort()).toUShort())
         }
     }
 }
@@ -165,20 +167,20 @@ class ShiftVxLeft(private val x: Int): Operation {
 class SkipIfVxAndVyNotEqual(private val x: Int, private val y: Int): Operation {
     override fun execute(memory: Memory) {
         if (memory.getV(x) != memory.getV(y)) {
-            memory.setProgramCounter((memory.getProgramCounter() + 2).toShort())
+            memory.setProgramCounter((memory.getProgramCounter() + 2.toUShort()).toUShort())
         }
     }
 }
 
-class SetI(private val value: Short): Operation {
+class SetI(private val value: UShort): Operation {
     override fun execute(memory: Memory) {
         memory.setI(value)
     }
 }
 
-class JumpOffsetV0(private val value: Short): Operation, JumpingOperation {
+class JumpOffsetV0(private val value: UShort): Operation, JumpingOperation {
     override fun execute(memory: Memory) {
-        memory.setProgramCounter((memory.getV(0) + value).toShort())
+        memory.setProgramCounter((memory.getV(0) + value).toUShort())
     }
 }
 
@@ -195,7 +197,7 @@ class Draw(private val n: Byte, private val x: Byte, private val y: Byte) {
 class SkipIfKeyVxIsPressed(private val x: Int, private val pressedKey: Chip8Key): Operation {
     override fun execute(memory: Memory) {
         if (memory.getV(x).toInt() == pressedKey.ordinal) {
-            memory.setProgramCounter((memory.getProgramCounter() + 2).toShort())
+            memory.setProgramCounter((memory.getProgramCounter() + 2).toUShort())
         }
     }
 }
@@ -203,7 +205,42 @@ class SkipIfKeyVxIsPressed(private val x: Int, private val pressedKey: Chip8Key)
 class SkipIfKeyVxIsNotPressed(private val x: Int, private val pressedKey: Chip8Key): Operation {
     override fun execute(memory: Memory) {
         if (memory.getV(x).toInt() != pressedKey.ordinal) {
-            memory.setProgramCounter((memory.getProgramCounter() + 2).toShort())
+            memory.setProgramCounter((memory.getProgramCounter() + 2).toUShort())
         }
+    }
+}
+
+class SetVxToDelayTimer(private val x: Int): Operation {
+    override fun execute(memory: Memory) {
+        memory.setV(x, memory.getDelayTimer())
+    }
+}
+
+class WaitForKeyPressAndStoreInVx(private val x: Int, private val keyboard: Keyboard): Operation {
+    override fun execute(memory: Memory) {
+        memory.setV(x, keyboard.waitForKeyPress().byte)
+    }
+}
+
+class SetDelayTimerToVx(private val x: Int): Operation {
+    override fun execute(memory: Memory) {
+        memory.setDelayTimer(memory.getV(x))
+    }
+}
+
+class SetSoundTimerToVx(private val x: Int): Operation {
+    override fun execute(memory: Memory) {
+        memory.setSoundTimer(memory.getV(x))
+    }
+}
+
+class AddVxToI(private val x: Int): Operation {
+    override fun execute(memory: Memory) {
+        val i = memory.getI().toInt()
+        val vx = memory.getV(x)
+        val result = i + vx
+        val overFlow = result > 0xFFFF
+        memory.setV(x, if (overFlow) 1 else 0)
+        memory.setI(result.toUShort())
     }
 }
