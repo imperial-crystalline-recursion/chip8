@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalUnsignedTypes::class)
+@file:OptIn(ExperimentalUnsignedTypes::class, ExperimentalUnsignedTypes::class)
 
 package com.afewroosloose.chip8
 
@@ -31,6 +31,12 @@ class Memory {
 
     private val stack2 = ArrayDeque<UShort>()
     private val stack = Array<UShort>(16) { 0.toUShort() }
+
+    fun initInterpreter() {
+        for (i in 0 until Font.ALPHABET.size) {
+            memory[i] = Font.ALPHABET[i]
+        }
+    }
 
     fun load(byteArray: UByteArray) {
         if (byteArray.size > MEMORY_SIZE - PROGRAM_START) {
