@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package com.afewroosloose.chip8
 
 import com.afewroosloose.chip8.operation.*
@@ -48,13 +50,17 @@ class CpuTests {
         memory.pushStack(2.toUShort())
         memory.pushStack(3.toUShort())
 
-        assertEquals(2.toByte(), memory.getStackPointer()) // we are pointing at frame 2
+        assertEquals(2.toUByte(), memory.getStackPointer()) // we are pointing at frame 2
         val operation = cpu.interpretInstruction(0x00EE)
         operation.assertType<Ret>()
 
         operation!!.execute(memory)
-        assertEquals("We should now have 3 on the program counter, since that was the last thing added to the stack", 3.toUShort(), memory.getProgramCounter())
-        assertEquals("Stack pointer should now point at 1", 1.toByte(), memory.getStackPointer())
+        assertEquals(
+            "We should now have 3 on the program counter, since that was the last thing added to the stack",
+            3.toUShort(),
+            memory.getProgramCounter()
+        )
+        assertEquals("Stack pointer should now point at 1", 1.toUByte(), memory.getStackPointer())
     }
 
     @Test
@@ -142,8 +148,8 @@ class CpuTests {
         operation.assertType<StoreInVx>()
 
         operation!!.execute(memory)
-        val actual: Byte = memory.getV(1)
-        assertEquals(0x33.toByte(), actual)
+        val actual: UByte = memory.getV(1)
+        assertEquals(0x33.toUByte(), actual)
     }
 
     @Test
@@ -153,19 +159,19 @@ class CpuTests {
         operation.assertType<AddToVx>()
 
         operation!!.execute(memory)
-        val actual: Byte = memory.getV(1)
-        assertEquals(0x34.toByte(), actual)
+        val actual: UByte = memory.getV(1)
+        assertEquals(0x34.toUByte(), actual)
     }
 
     @Test
     fun `test add to V register with overflow`() {
-        memory.setV(1, 0xFF.toByte())
+        memory.setV(1, 0xFF.toUByte())
         val operation = cpu.interpretInstruction(0x7101)
         operation.assertType<AddToVx>()
 
         operation!!.execute(memory)
-        val actual: Byte = memory.getV(1)
-        assertEquals(0.toByte(), actual)
+        val actual: UByte = memory.getV(1)
+        assertEquals(0.toUByte(), actual)
     }
 
     @Test
@@ -178,8 +184,8 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(5.toByte(), memory.getV(1))
-        assertEquals(5.toByte(), memory.getV(2))
+        assertEquals(5.toUByte(), memory.getV(1))
+        assertEquals(5.toUByte(), memory.getV(2))
     }
 
     @Test
@@ -192,8 +198,8 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(0b111.toByte(), memory.getV(1))
-        assertEquals(0b110.toByte(), memory.getV(2))
+        assertEquals(0b111.toUByte(), memory.getV(1))
+        assertEquals(0b110.toUByte(), memory.getV(2))
     }
 
     @Test
@@ -206,8 +212,8 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(0b100.toByte(), memory.getV(1))
-        assertEquals(0b110.toByte(), memory.getV(2))
+        assertEquals(0b100.toUByte(), memory.getV(1))
+        assertEquals(0b110.toUByte(), memory.getV(2))
     }
 
     @Test
@@ -220,8 +226,8 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(0b011.toByte(), memory.getV(1))
-        assertEquals(0b110.toByte(), memory.getV(2))
+        assertEquals(0b011.toUByte(), memory.getV(1))
+        assertEquals(0b110.toUByte(), memory.getV(2))
     }
 
     @Test
@@ -234,14 +240,14 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(7.toByte(), memory.getV(1))
-        assertEquals(4.toByte(), memory.getV(2))
-        assertEquals(0.toByte(), memory.getV(0xF))
+        assertEquals(7.toUByte(), memory.getV(1))
+        assertEquals(4.toUByte(), memory.getV(2))
+        assertEquals(0.toUByte(), memory.getV(0xF))
     }
 
     @Test
     fun `test bitwise plus on vx and vy with carry`() {
-        memory.setV(1, 0xFF.toByte())
+        memory.setV(1, 0xFF.toUByte())
         memory.setV(2, 1)
 
         val operation = cpu.interpretInstruction(0x8124)
@@ -249,9 +255,9 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(0.toByte(), memory.getV(1))
-        assertEquals(1.toByte(), memory.getV(2))
-        assertEquals(1.toByte(), memory.getV(0xF))
+        assertEquals(0.toUByte(), memory.getV(1))
+        assertEquals(1.toUByte(), memory.getV(2))
+        assertEquals(1.toUByte(), memory.getV(0xF))
     }
 
     @Test
@@ -264,9 +270,9 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(2.toByte(), memory.getV(1))
-        assertEquals(1.toByte(), memory.getV(2))
-        assertEquals(1.toByte(), memory.getV(0xF))
+        assertEquals(2.toUByte(), memory.getV(1))
+        assertEquals(1.toUByte(), memory.getV(2))
+        assertEquals(1.toUByte(), memory.getV(0xF))
     }
 
     @Test
@@ -279,9 +285,9 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals((-1).toByte(), memory.getV(1))
-        assertEquals(4.toByte(), memory.getV(2))
-        assertEquals(0.toByte(), memory.getV(0xF))
+        assertEquals((-1).toUByte(), memory.getV(1))
+        assertEquals(4.toUByte(), memory.getV(2))
+        assertEquals(0.toUByte(), memory.getV(0xF))
     }
 
     @Test
@@ -292,8 +298,8 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(0b11.toByte(), memory.getV(1))
-        assertEquals(1.toByte(), memory.getV(0xF))
+        assertEquals(0b11.toUByte(), memory.getV(1))
+        assertEquals(1.toUByte(), memory.getV(0xF))
     }
 
     @Test
@@ -304,8 +310,8 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(0b11.toByte(), memory.getV(1))
-        assertEquals(0.toByte(), memory.getV(0xF))
+        assertEquals(0b11.toUByte(), memory.getV(1))
+        assertEquals(0.toUByte(), memory.getV(0xF))
     }
 
     @Test
@@ -318,9 +324,9 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(2.toByte(), memory.getV(1))
-        assertEquals(3.toByte(), memory.getV(2))
-        assertEquals(1.toByte(), memory.getV(0xF))
+        assertEquals(2.toUByte(), memory.getV(1))
+        assertEquals(3.toUByte(), memory.getV(2))
+        assertEquals(1.toUByte(), memory.getV(0xF))
     }
 
     @Test
@@ -333,21 +339,21 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals((-1).toByte(), memory.getV(1))
-        assertEquals(3.toByte(), memory.getV(2))
-        assertEquals(0.toByte(), memory.getV(0xF))
+        assertEquals((-1).toUByte(), memory.getV(1))
+        assertEquals(3.toUByte(), memory.getV(2))
+        assertEquals(0.toUByte(), memory.getV(0xF))
     }
 
     @Test
     fun `test shl vx with 1 in most significant bit`() {
-        memory.setV(1, 0xFF.toByte())
+        memory.setV(1, 0xFF.toUByte())
         val operation = cpu.interpretInstruction(0x810E)
         operation.assertType<ShiftVxLeft>()
 
         operation!!.execute(memory)
 
-        assertEquals(0xFE.toByte(), memory.getV(1))
-        assertEquals(1.toByte(), memory.getV(0xF))
+        assertEquals(0xFE.toUByte(), memory.getV(1))
+        assertEquals(1.toUByte(), memory.getV(0xF))
     }
 
     @Test
@@ -358,8 +364,8 @@ class CpuTests {
 
         operation!!.execute(memory)
 
-        assertEquals(0b1100.toByte(), memory.getV(1))
-        assertEquals(0.toByte(), memory.getV(0xF))
+        assertEquals(0b1100.toUByte(), memory.getV(1))
+        assertEquals(0.toUByte(), memory.getV(0xF))
     }
 
 
@@ -452,23 +458,23 @@ class CpuTests {
 
     @Test
     fun `test set vx as delay timer`() {
-        memory.setDelayTimer(100)
+        memory.setDelayTimer(100.toUByte())
         val operation = cpu.interpretInstruction(0xF207)
         operation.assertType<SetVxToDelayTimer>()
 
         operation!!.execute(memory)
-        assertEquals(100.toByte(), memory.getV(2))
+        assertEquals(100.toUByte(), memory.getV(2))
     }
 
     @Test
     fun `test wait for keypress and store in vx`() {
         keyboard.key = Chip8Key.A
-        memory.setDelayTimer(100)
+        memory.setDelayTimer(100.toUByte())
         val operation = cpu.interpretInstruction(0xF20A)
         operation.assertType<WaitForKeyPressAndStoreInVx>()
 
         operation!!.execute(memory)
-        assertEquals(0xA.toByte(), memory.getV(2))
+        assertEquals(0xA.toUByte(), memory.getV(2))
     }
 
     @Test
@@ -478,7 +484,7 @@ class CpuTests {
         operation.assertType<SetDelayTimerToVx>()
 
         operation!!.execute(memory)
-        assertEquals(55.toByte(), memory.getV(2))
+        assertEquals(55.toUByte(), memory.getV(2))
     }
 
     @Test
@@ -488,7 +494,7 @@ class CpuTests {
         operation.assertType<SetSoundTimerToVx>()
 
         operation!!.execute(memory)
-        assertEquals(55.toByte(), memory.getSoundTimer())
+        assertEquals(55.toUByte(), memory.getSoundTimer())
     }
 
     @Test
@@ -500,7 +506,7 @@ class CpuTests {
 
         operation!!.execute(memory)
         assertEquals(4.toUShort(), memory.getI())
-        assertEquals(0.toByte(), memory.getV(0xF))
+        assertEquals(0.toUByte(), memory.getV(0xF))
     }
 
     @Test
@@ -511,7 +517,7 @@ class CpuTests {
         operation.assertType<AddVxToI>()
 
         operation!!.execute(memory)
-        assertEquals(0.toShort(), memory.getI())
-        assertEquals(1.toByte(), memory.getV(0xF))
+        assertEquals(0.toUShort(), memory.getI())
+        assertEquals(1.toUByte(), memory.getV(0xF))
     }
 }

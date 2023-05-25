@@ -38,14 +38,14 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
                 val register = (operation and 0xF00) shr 8
                 val value = operation and 0xFF
 
-                return SkipNextIfEqual(value.toByte(), register)
+                return SkipNextIfEqual(value.toUByte(), register)
             }
 
             4 -> {
                 val register = (operation and 0xF00) shr 8
                 val value = operation and 0xFF
 
-                return SkipNextIfNotEqual(value.toByte(), register)
+                return SkipNextIfNotEqual(value.toUByte(), register)
             }
 
             5 -> {
@@ -60,14 +60,14 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
 
             6 -> {
                 val x = (operation and 0x0F00) shr 8
-                val value = (operation and 0x00FF).toByte()
+                val value = (operation and 0x00FF).toUByte()
 
                 return StoreInVx(x, value)
             }
 
             7 -> {
                 val x = (operation and 0x0F00) shr 8
-                val value = (operation and 0x00FF).toByte()
+                val value = (operation and 0x00FF).toUByte()
 
                 return AddToVx(x, value)
             }
@@ -147,7 +147,7 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
 
             0xC -> {
                 val x = (operation and 0xF00) shr 8
-                val kk = (operation and 0xFF).toByte()
+                val kk = (operation and 0xFF).toUByte()
                 return RandomIntoVx(x, kk)
             }
 
@@ -180,13 +180,16 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
                         // wait for keypress, store in Vx
                         return WaitForKeyPressAndStoreInVx(x, keyboard)
                     }
+
                     0x15 -> {
                         // set delay timer to Vx
                         return SetDelayTimerToVx(x)
                     }
+
                     0x18 -> {
                         return SetSoundTimerToVx(x)
                     }
+
                     0x1E -> {
                         return AddVxToI(x)
                     }

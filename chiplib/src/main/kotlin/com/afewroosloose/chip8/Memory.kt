@@ -2,6 +2,7 @@
 
 package com.afewroosloose.chip8
 
+import java.util.UUID
 import kotlin.experimental.and
 
 class Memory {
@@ -17,21 +18,21 @@ class Memory {
         private const val SCREEN_END = (64 * 32) / 8
     }
 
-    private val memory = ByteArray(MEMORY_SIZE) { 0 }
-    private val registers = ByteArray(NUMBER_OF_REGISTERS) { 0 }
+    private val memory = UByteArray(MEMORY_SIZE) { 0.toUByte() }
+    private val registers = UByteArray(NUMBER_OF_REGISTERS) { 0.toUByte() }
 
     // various registers
     private var i: UShort = 0.toUShort() // used for storing memory adddresses
     private var pc: UShort = 0.toUShort() // program counter
-    private var sp: Byte = 0  // stack pointer
+    private var sp: UByte = 0.toUByte()  // stack pointer
 
-    private var dt: Byte = 0 // delay timer
-    private var st: Byte = 0 // sound timer
+    private var dt: UByte = 0.toUByte() // delay timer
+    private var st: UByte = 0.toUByte() // sound timer
 
     private val stack2 = ArrayDeque<UShort>()
     private val stack = Array<UShort>(16) { 0.toUShort() }
 
-    fun load(byteArray: ByteArray) {
+    fun load(byteArray: UByteArray) {
         if (byteArray.size > MEMORY_SIZE - PROGRAM_START) {
             throw InvalidProgramSizeException()
         }
@@ -40,7 +41,7 @@ class Memory {
         }
     }
 
-    fun getV(x: Int): Byte {
+    fun getV(x: Int): UByte {
         if (x in 0 until NUMBER_OF_REGISTERS) {
             return registers[x]
         } else {
@@ -49,8 +50,12 @@ class Memory {
     }
 
     fun setV(x: Int, value: Byte) {
+        setV(x, (value.toInt() and 0xFF).toUByte())
+    }
+
+    fun setV(x: Int, value: UByte) {
         if (x in 0 until NUMBER_OF_REGISTERS) {
-            registers[x] = value and 0xFF.toByte()
+            registers[x] = value and 0xFF.toUByte()
         } else {
             throw IllegalRegsiterException(x)
         }
@@ -67,23 +72,23 @@ class Memory {
         // todo: clear screen buffer
     }
 
-    fun getScreenBuffer(): Array<ByteArray> {
-        return Array<ByteArray>(8) { ByteArray(4) { 0 } }
+    fun getScreenBuffer(): Array<UByteArray> {
+        return Array<UByteArray>(8) { UByteArray(4) { 0.toUByte() } }
     }
 
     fun pushStack(value: UShort) {
-        if (sp >= 16) {
+        if (sp >= 16.toUByte()) {
             throw StackOverflowException()
         } else {
             stack2.addLast(value)
-            sp = (stack2.size - 1).toByte()
+            sp = (stack2.size - 1).toUByte()
         }
     }
 
     fun popStack(): UShort {
         val value = stack2.removeLast()
-        sp = (stack2.size - 1).toByte()
-        if (sp < 0) sp = 0
+        sp = (stack2.size - 1).toUByte()
+        if (sp < 0.toUByte()) sp = 0.toUByte()
         return value
     }
 
@@ -94,11 +99,11 @@ class Memory {
     fun getI(): UShort = i
     fun getDelayTimer() = dt
 
-    fun setDelayTimer(value: Byte) {
+    fun setDelayTimer(value: UByte) {
         dt = value
     }
 
-    fun setSoundTimer(value: Byte) {
+    fun setSoundTimer(value: UByte) {
         st = value
     }
 

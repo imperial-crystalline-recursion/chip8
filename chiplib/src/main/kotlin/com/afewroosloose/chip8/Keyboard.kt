@@ -8,5 +8,5 @@ interface Keyboard {
 enum class Chip8Key {
     ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, A, B, C, D, E, F, NONE;
 
-    val byte: Byte = ordinal.toByte()
+    val byte: UByte = ordinal.toUByte()
 }
