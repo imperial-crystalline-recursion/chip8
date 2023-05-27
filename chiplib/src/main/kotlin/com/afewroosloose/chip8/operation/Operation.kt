@@ -149,8 +149,8 @@ class ShiftVxRight(private val x: Int): Operation {
     override fun execute(memory: Memory) {
         val xInt = memory.getV(x).toInt() and 0xFF
         val leastSignificantBit = if (xInt and 0x1 != 0) 1 else 0
-        memory.setV(0xF, leastSignificantBit.toUByte ())
         memory.setV(x, (xInt shr 1).toUByte ())
+        memory.setV(0xF, leastSignificantBit.toUByte ())
     }
 }
 
@@ -158,8 +158,8 @@ class ShiftVxLeft(private val x: Int): Operation {
     override fun execute(memory: Memory) {
         val xInt = memory.getV(x).toInt() and 0xFF
         val mostSignificantBit = xInt shr 7
-        memory.setV(0xF, mostSignificantBit.toUByte ())
         memory.setV(x, (xInt shl 1).toUByte ())
+        memory.setV(0xF, mostSignificantBit.toUByte ())
     }
 }
 

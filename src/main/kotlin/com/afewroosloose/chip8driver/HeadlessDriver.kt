@@ -20,7 +20,7 @@ import com.afewroosloose.chip8.Memory
             }
             val cpu = Cpu(memory, keyboard)
 
-            val rom = memory::class.java.classLoader.getResourceAsStream("chip8logo.ch8").readBytes().toUByteArray()
+            val rom = memory::class.java.classLoader.getResourceAsStream("flags.ch8").readBytes().toUByteArray()
 
             memory.load(rom)
             cpu.execute()

@@ -23,7 +23,7 @@ class Memory {
     // various registers
     private var i: UShort = 0.toUShort() // used for storing memory adddresses
     private var pc: UShort = 0x200.toUShort() // program counter
-    private var sp: UByte = 0.toUByte()  // stack pointer
+    private var sp: Byte = 0.toByte()  // stack pointer
 
     private var dt: UByte = 0.toUByte() // delay timer
     private var st: UByte = 0.toUByte() // sound timer
@@ -82,7 +82,9 @@ class Memory {
     fun getProgramCounter(): UShort = pc
 
     fun clearScreenBuffer() {
-        // todo: clear screen buffer
+        for (i in 0 until screenBuffer.size) {
+            screenBuffer[i] = 0u
+        }
     }
 
     fun getScreenBuffer(): Array<ULong> {
@@ -90,18 +92,18 @@ class Memory {
     }
 
     fun pushStack(value: UShort) {
-        if (sp >= 16.toUByte()) {
+        if (sp >= 16.toByte()) {
             throw StackOverflowException()
         } else {
             stack2.addLast(value)
-            sp = (stack2.size - 1).toUByte()
+            sp = (stack2.size - 1).toByte()
         }
     }
 
     fun popStack(): UShort {
         val value = stack2.removeLast()
-        sp = (stack2.size - 1).toUByte()
-        if (sp < 0.toUByte()) sp = 0.toUByte()
+        sp = (stack2.size - 1).toByte()
+        if (sp < 0.toByte()) sp = 0.toByte()
         return value
     }
 
