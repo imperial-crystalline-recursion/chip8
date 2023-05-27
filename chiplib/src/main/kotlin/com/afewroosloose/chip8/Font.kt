@@ -121,11 +121,26 @@ class Font {
             0x80
         )
 
-        val ALPHABET: UByteArray = ubyteArrayOf().plusAll(listOf(
-            ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, A, B, C, D, E, F
-        ))
+        val ALPHABET: UByteArray = ubyteArrayOf()
+            .plus(ZERO)
+            .plus(ONE)
+            .plus(TWO)
+            .plus(THREE)
+            .plus(FOUR)
+            .plus(FIVE)
+            .plus(SIX)
+            .plus(SEVEN)
+            .plus(EIGHT)
+            .plus(NINE)
+            .plus(A)
+            .plus(B)
+            .plus(C)
+            .plus(D)
+            .plus(E)
+            .plus(F)
     }
 }
+
 fun ubyteArrayOf(vararg integers: Int): UByteArray {
     return integers.map {
         (it and 0xFF).toUByte()

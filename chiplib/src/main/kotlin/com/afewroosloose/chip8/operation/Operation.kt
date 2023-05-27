@@ -1,14 +1,13 @@
 @file:Suppress("DuplicatedCode")
+@file:OptIn(ExperimentalUnsignedTypes::class)
 
 package com.afewroosloose.chip8.operation
 
 import com.afewroosloose.chip8.Chip8Key
-import com.afewroosloose.chip8.Cpu
 import com.afewroosloose.chip8.Keyboard
 import com.afewroosloose.chip8.Memory
-import kotlin.experimental.and
-import kotlin.experimental.or
-import kotlin.experimental.xor
+import com.afewroosloose.chip8.util.printAsSymbols
+import com.afewroosloose.chip8.util.toBCD
 import kotlin.math.roundToInt
 
 interface Operation {
@@ -186,12 +185,8 @@ class JumpOffsetV0(private val value: UShort): Operation, JumpingOperation {
 
 class RandomIntoVx(private val x: Int, private val kk: UByte ): Operation {
     override fun execute(memory: Memory) {
-        memory.setV(x, (Math.random() * 255).roundToInt().toUByte () and kk)
+        memory.setV(x, (Math.random() * 255).roundToInt().toUByte() and kk)
     }
-}
-
-class Draw(private val n: UByte , private val x: UByte , private val y: UByte ) {
-
 }
 
 class SkipIfKeyVxIsPressed(private val x: Int, private val pressedKey: Chip8Key): Operation {
@@ -242,5 +237,97 @@ class AddVxToI(private val x: Int): Operation {
         val overFlow = result.toInt() > 0xFFFF
         memory.setV(0xF, (if (overFlow) 1 else 0).toUByte())
         memory.setI(result.toUShort())
+    }
+}
+
+class GetLocationOfSpriteForVx(private val x: Int): Operation {
+    override fun execute(memory: Memory) {
+        memory.getSpriteStartLocation(memory.getV(x))
+    }
+}
+
+class StoreBCDVxInMemoryPointedToByI(private val x: Int): Operation {
+    override fun execute(memory: Memory) {
+        val vx = memory.getV(x)
+        val bcd = vx.toBCD()
+
+        val i = memory.getI().toInt()
+        memory.setMemory(i, bcd[0])
+        memory.setMemory(i + 1, bcd[1])
+        memory.setMemory(i + 2, bcd[2])
+    }
+}
+
+class StoreV0ToVxInAddressPointedToByI(private val x: Int): Operation {
+    override fun execute(memory: Memory) {
+        val i = memory.getI()
+        for (index in 0..x) {
+            val location = i.toInt() + index
+            val value = memory.getV(index)
+            memory.setMemory(location, value)
+        }
+        // note that this can't overflow in practice because memory is always from 0x0 to 0xFFF, but I put this just in case.
+        val vF = if (i.toUInt() + x.toUShort() + 1u > 0xFFFFu) 1 else 0
+        val newI = (i + x.toUShort() + 1u)
+        memory.setI(newI.toUShort())
+        memory.setV(0xF, vF.toUByte())
+    }
+}
+
+class LoadV0ToVxFromAddressPointedToByI(private val x: Int): Operation {
+    override fun execute(memory: Memory) {
+        val i = memory.getI()
+        for (index in 0..x) {
+            val location = i.toInt() + index
+            val value = memory.getMemory()[location]
+            memory.setV(index, value)
+        }
+        // note that this can't overflow in practice because memory is always from 0x0 to 0xFFF, but I put this just in case.
+        val vF = if (i.toUInt() + x.toUShort() + 1u > 0xFFFFu) 1 else 0
+        val newI = (i + x.toUShort() + 1u)
+        memory.setI(newI.toUShort())
+        memory.setV(0xF, vF.toUByte())
+    }
+}
+
+/**
+ * Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N pixels. Each row of 8 pixels is
+ * read as bit-coded starting from memory location I; I value does not change after the execution of this instruction.
+ * As described above, VF is set to 1 if any screen pixels are flipped from set to unset when the sprite is drawn, and
+ * to 0 if that does not happen.
+ */
+class Draw(private val x: Int, private val y: Int, private val n: Int): Operation {
+    override fun execute(memory: Memory) {
+        val i = memory.getI().toInt()
+        val sprite = Array<UByte>(n) { 0u }
+
+        val vy = memory.getV(y).toInt()
+        val vx = memory.getV(x).toInt()
+
+        val memoryArray = memory.getMemory()
+
+        // load index
+        for (index in 0 until n) {
+            sprite[index] = memoryArray[index + i]
+        }
+
+        val screenBuffer = memory.getScreenBuffer()
+
+        var collision = false
+        sprite.forEachIndexed { idx, row ->
+            val rowAsUInt = row.toULong().rotateRight(vx + 8)
+            val currentRowWrapped = (idx + vy) % 32
+            val currentRowSum = screenBuffer[currentRowWrapped] + rowAsUInt
+            val currentRowXor = screenBuffer[currentRowWrapped] xor rowAsUInt
+            if (currentRowSum != currentRowXor) {
+                collision = true
+            }
+            screenBuffer[currentRowWrapped] = currentRowXor
+        }
+        memory.setV(0xF, if (collision) 1 else 0)
+        screenBuffer.forEach {
+            it.printAsSymbols()
+        }
+        memory.setScreenBuffer(screenBuffer)
     }
 }

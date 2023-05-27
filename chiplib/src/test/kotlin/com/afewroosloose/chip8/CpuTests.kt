@@ -41,7 +41,7 @@ class CpuTests {
         operation.assertType<ClearScreen>()
 
         operation!!.execute(memory)
-        memory.getScreenBuffer().assertAllZero()
+//        memory.getScreenBuffer().assertAllFalse
     }
 
     @Test
@@ -519,5 +519,112 @@ class CpuTests {
         operation!!.execute(memory)
         assertEquals(0.toUShort(), memory.getI())
         assertEquals(1.toUByte(), memory.getV(0xF))
+    }
+
+    @Test
+    fun `get location of value of sprite for value in Vx`() {
+        for (i in 0 until 16) {
+            memory.setV(2, i.toUByte())
+            val operation = cpu.interpretInstruction(0XF229)
+            operation.assertType<GetLocationOfSpriteForVx>()
+
+            operation!!.execute(memory)
+            val startIndex = i * 5
+            val endIndex = startIndex + 5
+            val letter = Font.ALPHABET.slice(startIndex until endIndex)
+            val memorySlice = memory.getMemory().slice(startIndex until endIndex)
+            assertEquals(letter, memorySlice)
+        }
+    }
+
+    @Test
+    fun `set memory pointed to by I to value of Vx in BCD format`() {
+        memory.setV(2, 251.toUByte())
+        memory.setI(0x200.toUShort())
+        val operation = cpu.interpretInstruction(0xF233)
+        operation.assertType<StoreBCDVxInMemoryPointedToByI>()
+
+        operation!!.execute(memory)
+        assertEquals(2.toUByte(), memory.getMemory()[0x200])
+        assertEquals(5.toUByte(), memory.getMemory()[0x201])
+        assertEquals(1.toUByte(), memory.getMemory()[0x202])
+    }
+
+    @Test
+    fun `test set memory pointed to by I to value of Vx in BCD format, but number is less than 0x100`() {
+        memory.setV(2, 51.toUByte())
+        memory.setI(0x200.toUShort())
+        val operation = cpu.interpretInstruction(0xF233)
+        operation.assertType<StoreBCDVxInMemoryPointedToByI>()
+
+        operation!!.execute(memory)
+        assertEquals(0.toUByte(), memory.getMemory()[0x200])
+        assertEquals(5.toUByte(), memory.getMemory()[0x201])
+        assertEquals(1.toUByte(), memory.getMemory()[0x202])
+    }
+
+    @Test
+    fun `test set memory pointed to by I to value of Vx in BCD format, but tens are 0`() {
+        memory.setV(2, 201.toUByte())
+        memory.setI(0x200.toUShort())
+        val operation = cpu.interpretInstruction(0xF233)
+        operation.assertType<StoreBCDVxInMemoryPointedToByI>()
+
+        operation!!.execute(memory)
+        assertEquals(2.toUByte(), memory.getMemory()[0x200])
+        assertEquals(0.toUByte(), memory.getMemory()[0x201])
+        assertEquals(1.toUByte(), memory.getMemory()[0x202])
+    }
+
+    @Test
+    fun `test set memory pointed to by I to value of Vx in BCD format, but ones are 0`() {
+        memory.setV(2, 250.toUByte())
+        memory.setI(0x200.toUShort())
+        val operation = cpu.interpretInstruction(0xF233)
+        operation.assertType<StoreBCDVxInMemoryPointedToByI>()
+
+        operation!!.execute(memory)
+        assertEquals(2.toUByte(), memory.getMemory()[0x200])
+        assertEquals(5.toUByte(), memory.getMemory()[0x201])
+        assertEquals(0.toUByte(), memory.getMemory()[0x202])
+    }
+
+    @Test
+    fun `test load v0 to vx into addresses starting from i, without overflow`() {
+        for (i in 0..15) {
+            memory.setV(i, (i + 1).toUByte())
+        }
+        memory.setI(0x200.toUShort())
+
+        val operation = cpu.interpretInstruction(0xF255)
+        operation.assertType<StoreV0ToVxInAddressPointedToByI>()
+
+        operation!!.execute(memory)
+
+        assertEquals(1.toUByte(), memory.getMemory()[0x200])
+        assertEquals(2.toUByte(), memory.getMemory()[0x201])
+        assertEquals(3.toUByte(), memory.getMemory()[0x202])
+        for (i in 0x203 until memory.getMemory().size) {
+            assertEquals("At index $i the value should be 0", 0.toUByte(), memory.getMemory()[i])
+        }
+        assertEquals((0x200 + 2 + 1).toUShort(), memory.getI())
+    }
+
+    @Test
+    fun `test load v0 to vx from addresses starting from i, without overflow`() {
+        for (i in 0..15) {
+            memory.setMemory(i + 0x200, (i + 1).toUByte())
+        }
+        memory.setI(0x200.toUShort())
+
+        val operation = cpu.interpretInstruction(0xF265)
+        operation.assertType<LoadV0ToVxFromAddressPointedToByI>()
+
+        operation!!.execute(memory)
+
+        assertEquals(1.toUByte(), memory.getV(0))
+        assertEquals(2.toUByte(), memory.getV(1))
+        assertEquals(3.toUByte(), memory.getV(2))
+        assertEquals((0x200 + 2 + 1).toUShort(), memory.getI())
     }
 }

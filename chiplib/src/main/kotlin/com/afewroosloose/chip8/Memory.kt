@@ -1,9 +1,8 @@
-@file:OptIn(ExperimentalUnsignedTypes::class, ExperimentalUnsignedTypes::class)
+@file:OptIn(ExperimentalUnsignedTypes::class, ExperimentalUnsignedTypes::class, ExperimentalUnsignedTypes::class)
 
 package com.afewroosloose.chip8
 
-import java.util.UUID
-import kotlin.experimental.and
+import kotlin.math.pow
 
 class Memory {
     companion object {
@@ -23,7 +22,7 @@ class Memory {
 
     // various registers
     private var i: UShort = 0.toUShort() // used for storing memory adddresses
-    private var pc: UShort = 0.toUShort() // program counter
+    private var pc: UShort = 0x200.toUShort() // program counter
     private var sp: UByte = 0.toUByte()  // stack pointer
 
     private var dt: UByte = 0.toUByte() // delay timer
@@ -31,6 +30,12 @@ class Memory {
 
     private val stack2 = ArrayDeque<UShort>()
     private val stack = Array<UShort>(16) { 0.toUShort() }
+
+    private var screenBuffer = Array<ULong>(32) { 0u }
+
+    init {
+        initInterpreter()
+    }
 
     fun initInterpreter() {
         for (i in 0 until Font.ALPHABET.size) {
@@ -46,6 +51,8 @@ class Memory {
             memory[index + PROGRAM_START] = byte
         }
     }
+
+    fun getMemory() = memory.copyOf()
 
     fun getV(x: Int): UByte {
         if (x in 0 until NUMBER_OF_REGISTERS) {
@@ -78,8 +85,8 @@ class Memory {
         // todo: clear screen buffer
     }
 
-    fun getScreenBuffer(): Array<UByteArray> {
-        return Array<UByteArray>(8) { UByteArray(4) { 0.toUByte() } }
+    fun getScreenBuffer(): Array<ULong> {
+        return screenBuffer.copyOf()
     }
 
     fun pushStack(value: UShort) {
@@ -114,4 +121,25 @@ class Memory {
     }
 
     fun getSoundTimer() = st
+    fun getSpriteStartLocation(digit: UByte): UByte {
+        return memory[digit.toInt() * 5]
+    }
+
+    fun setMemory(i: Int, uByte: UByte) {
+        memory[i] = uByte
+    }
+
+    fun getInstruction(): UShort {
+        val addr = pc.toInt()
+        val significantByte = memory[addr]
+        val smallerByte = memory[addr + 1]
+
+        val short: UShort = (significantByte * (2f.pow(8).toUInt()) + smallerByte).toUShort()
+
+        return short
+    }
+
+    fun setScreenBuffer(screenBuffer: Array<ULong>) {
+        this.screenBuffer = screenBuffer
+    }
 }

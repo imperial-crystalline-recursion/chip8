@@ -152,7 +152,12 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
             }
 
             0xD -> {
-                // todo: draw
+                println("instruction code is ${operation.toString(16)}")
+                val x = operation shr 8 and 0x0F
+                val y = operation shr 4 and 0x0F
+                val n = operation and 0x0F
+
+                return Draw(x, y, n)
             }
 
             0xE -> {
@@ -193,9 +198,32 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
                     0x1E -> {
                         return AddVxToI(x)
                     }
+                    0x29 -> {
+                        return GetLocationOfSpriteForVx(x)
+                    }
+                    0x33 -> {
+                        return StoreBCDVxInMemoryPointedToByI(x)
+                    }
+                    0x55 -> {
+                        return StoreV0ToVxInAddressPointedToByI(x)
+                    }
+                    0x65 -> {
+                        return LoadV0ToVxFromAddressPointedToByI(x)
+                    }
                 }
             }
         }
         return null
+    }
+
+    fun execute() {
+        while(true) {
+            val opcode = memory.getInstruction()
+            val instruction = interpretInstruction(opcode.toInt())
+            instruction?.execute(memory)
+            if (instruction !is JumpingOperation) {
+                memory.setProgramCounter((memory.getProgramCounter() + 2u).toUShort())
+            }
+        }
     }
 }
