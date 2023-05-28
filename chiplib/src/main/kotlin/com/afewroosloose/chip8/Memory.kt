@@ -4,7 +4,7 @@ package com.afewroosloose.chip8
 
 import kotlin.math.pow
 
-class Memory {
+class Memory() {
     companion object {
         private const val MEMORY_SIZE = 0xFFF
         private const val MAX_ADDRESS = MEMORY_SIZE - 1

@@ -50,7 +50,7 @@ class CpuTests {
         memory.pushStack(2.toUShort())
         memory.pushStack(3.toUShort())
 
-        assertEquals(2.toUByte(), memory.getStackPointer()) // we are pointing at frame 2
+        assertEquals(2.toByte(), memory.getStackPointer()) // we are pointing at frame 2
         val operation = cpu.interpretInstruction(0x00EE)
         operation.assertType<Ret>()
 
@@ -60,7 +60,7 @@ class CpuTests {
             3.toUShort(),
             memory.getProgramCounter()
         )
-        assertEquals("Stack pointer should now point at 1", 1.toUByte(), memory.getStackPointer())
+        assertEquals("Stack pointer should now point at 1", 1.toByte(), memory.getStackPointer())
     }
 
     @Test
@@ -82,7 +82,7 @@ class CpuTests {
         operation.assertType<SkipNextIfEqual>()
 
         operation!!.execute(memory)
-        assertEquals(2.toUShort(), memory.getProgramCounter())
+        assertEquals(0x202.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -93,7 +93,7 @@ class CpuTests {
         operation.assertType<SkipNextIfEqual>()
 
         operation!!.execute(memory)
-        assertEquals(0.toUShort(), memory.getProgramCounter())
+        assertEquals(0x200.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -104,7 +104,7 @@ class CpuTests {
         operation.assertType<SkipNextIfNotEqual>()
 
         operation!!.execute(memory)
-        assertEquals(0.toUShort(), memory.getProgramCounter())
+        assertEquals(0x200.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -115,7 +115,7 @@ class CpuTests {
         operation.assertType<SkipNextIfNotEqual>()
 
         operation!!.execute(memory)
-        assertEquals(2.toUShort(), memory.getProgramCounter())
+        assertEquals(0x202.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -127,7 +127,7 @@ class CpuTests {
         operation.assertType<SkipIfVxEqualsVy>()
 
         operation!!.execute(memory)
-        assertEquals(2.toUShort(), memory.getProgramCounter())
+        assertEquals(0x202.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -139,7 +139,7 @@ class CpuTests {
         operation.assertType<SkipIfVxEqualsVy>()
 
         operation!!.execute(memory)
-        assertEquals(0.toUShort(), memory.getProgramCounter())
+        assertEquals(0x200.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -378,7 +378,7 @@ class CpuTests {
         operation.assertType<SkipIfVxAndVyNotEqual>()
 
         operation!!.execute(memory)
-        assertEquals(2.toUShort(), memory.getProgramCounter())
+        assertEquals(0x202.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -390,7 +390,7 @@ class CpuTests {
         operation.assertType<SkipIfVxAndVyNotEqual>()
 
         operation!!.execute(memory)
-        assertEquals(0.toUShort(), memory.getProgramCounter())
+        assertEquals(0x200.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -420,7 +420,7 @@ class CpuTests {
         operation.assertType<SkipIfKeyVxIsPressed>()
 
         operation!!.execute(memory)
-        assertEquals(2.toUShort(), memory.getProgramCounter())
+        assertEquals(0x202.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -431,7 +431,7 @@ class CpuTests {
         operation.assertType<SkipIfKeyVxIsPressed>()
 
         operation!!.execute(memory)
-        assertEquals(0.toUShort(), memory.getProgramCounter())
+        assertEquals(0x200.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -442,7 +442,7 @@ class CpuTests {
         operation.assertType<SkipIfKeyVxIsNotPressed>()
 
         operation!!.execute(memory)
-        assertEquals(2.toUShort(), memory.getProgramCounter())
+        assertEquals(0x202.toUShort(), memory.getProgramCounter())
     }
 
     @Test
@@ -453,7 +453,7 @@ class CpuTests {
         operation.assertType<SkipIfKeyVxIsNotPressed>()
 
         operation!!.execute(memory)
-        assertEquals(0.toUShort(), memory.getProgramCounter())
+        assertEquals(0x200.toUShort(), memory.getProgramCounter())
     }
 
     @Test
