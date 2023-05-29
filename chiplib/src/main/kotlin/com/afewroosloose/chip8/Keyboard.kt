@@ -1,12 +1,13 @@
 package com.afewroosloose.chip8
 
 interface Keyboard {
-    fun getPressedKey(): Chip8Key
-    fun waitForKeyPress(): Chip8Key
-}
+    /**
+     * Returns a UShort. Each bit corresponds to a key. Smallest is 0, largest is F
+     */
+    fun getPressedKey(): UShort
 
-enum class Chip8Key {
-    ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, A, B, C, D, E, F, NONE;
-
-    val byte: UByte = ordinal.toUByte()
+    /**
+     * Returns a UShort. Each bit corresponds to a key. Smallest is 0, largest is F
+     */
+    fun waitForKeyPress(): UShort
 }

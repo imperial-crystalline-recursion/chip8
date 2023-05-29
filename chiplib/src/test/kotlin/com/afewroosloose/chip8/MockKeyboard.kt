@@ -1,13 +1,13 @@
 package com.afewroosloose.chip8
 
 class MockKeyboard: Keyboard {
-    var key: Chip8Key = Chip8Key.NONE
+    var key: UShort = 0u
 
-    override fun getPressedKey(): Chip8Key {
+    override fun getPressedKey(): UShort {
         return key
     }
 
-    override fun waitForKeyPress(): Chip8Key {
+    override fun waitForKeyPress(): UShort {
         Thread.sleep(1000)
         return key
     }

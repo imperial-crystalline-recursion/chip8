@@ -13,6 +13,9 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
 
     implementation project(":chiplib")
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.1"
 }
 
 test {

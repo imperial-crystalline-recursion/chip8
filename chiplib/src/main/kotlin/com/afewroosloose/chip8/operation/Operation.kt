@@ -3,7 +3,6 @@
 
 package com.afewroosloose.chip8.operation
 
-import com.afewroosloose.chip8.Chip8Key
 import com.afewroosloose.chip8.Keyboard
 import com.afewroosloose.chip8.Memory
 import com.afewroosloose.chip8.util.printAsSymbols
@@ -189,17 +188,23 @@ class RandomIntoVx(private val x: Int, private val kk: UByte ): Operation {
     }
 }
 
-class SkipIfKeyVxIsPressed(private val x: Int, private val pressedKey: Chip8Key): Operation {
+class SkipIfKeyVxIsPressed(private val x: Int, private val pressedKeys: UShort): Operation {
     override fun execute(memory: Memory) {
-        if (memory.getV(x).toInt() == pressedKey.ordinal) {
+        val keyToCheckFor = memory.getV(x).toUShort()
+        val leftShift = keyToCheckFor
+        val mask: UShort = 1u.rotateLeft(leftShift.toInt()).toUShort()
+        if (pressedKeys and mask != 0u.toUShort()) {
             memory.setProgramCounter((memory.getProgramCounter() + 2.toUShort()).toUShort())
         }
     }
 }
 
-class SkipIfKeyVxIsNotPressed(private val x: Int, private val pressedKey: Chip8Key): Operation {
+class SkipIfKeyVxIsNotPressed(private val x: Int, private val pressedKeys: UShort): Operation {
     override fun execute(memory: Memory) {
-        if (memory.getV(x).toInt() != pressedKey.ordinal) {
+        val keyToCheckFor = memory.getV(x).toUShort()
+        val leftShift = keyToCheckFor
+        val mask: UShort = 1u.rotateLeft(leftShift.toInt()).toUShort()
+        if (pressedKeys and mask == 0u.toUShort()) {
             memory.setProgramCounter((memory.getProgramCounter() + 2.toUShort()).toUShort())
         }
     }
@@ -213,7 +218,16 @@ class SetVxToDelayTimer(private val x: Int): Operation {
 
 class WaitForKeyPressAndStoreInVx(private val x: Int, private val keyboard: Keyboard): Operation {
     override fun execute(memory: Memory) {
-        memory.setV(x, keyboard.waitForKeyPress().byte )
+        val mask = 1u.toUShort()
+        while(true) {
+            val keys = keyboard.waitForKeyPress()
+            for (i in 0 until UShort.SIZE_BITS) {
+                if (keys.rotateRight(i) and mask == 1u.toUShort()) {
+                    memory.setV(x, i.toUByte())
+                    return;
+                }
+            }
+        }
     }
 }
 

@@ -22,7 +22,11 @@ class CpuTests {
     fun setup() {
         memory = Memory()
         keyboard = MockKeyboard()
-        cpu = Cpu(memory, keyboard)
+        cpu = Cpu(memory, keyboard, object: Display {
+            override fun draw(screenBuffer: Array<ULong>) {
+
+            }
+        })
     }
 
     @Test
@@ -414,7 +418,7 @@ class CpuTests {
 
     @Test
     fun `test skip if key vx is pressed`() {
-        keyboard.key = Chip8Key.A
+        keyboard.key = 1u.rotateLeft(0xB).toUShort()
         memory.setV(0xA, 0xA)
         val operation = cpu.interpretInstruction(0xEA9E)
         operation.assertType<SkipIfKeyVxIsPressed>()
@@ -425,7 +429,7 @@ class CpuTests {
 
     @Test
     fun `test skip if key vx is pressed, but we are not pressing`() {
-        keyboard.key = Chip8Key.NONE
+        keyboard.key = 1u.rotateLeft(0xB).toUShort()
         memory.setV(0xA, 0)
         val operation = cpu.interpretInstruction(0xEA9E)
         operation.assertType<SkipIfKeyVxIsPressed>()
@@ -436,7 +440,7 @@ class CpuTests {
 
     @Test
     fun `test skip if key vx is not pressed`() {
-        keyboard.key = Chip8Key.A
+        keyboard.key = 1u.rotateLeft(0xB).toUShort()
         memory.setV(0xA, 0)
         val operation = cpu.interpretInstruction(0xEAA1)
         operation.assertType<SkipIfKeyVxIsNotPressed>()
@@ -447,7 +451,7 @@ class CpuTests {
 
     @Test
     fun `test skip if key vx is not pressed, but we are pressing`() {
-        keyboard.key = Chip8Key.A
+        keyboard.key = 0b0000010000000000u
         memory.setV(0xA, 0xA)
         val operation = cpu.interpretInstruction(0xEAA1)
         operation.assertType<SkipIfKeyVxIsNotPressed>()
@@ -468,7 +472,7 @@ class CpuTests {
 
     @Test
     fun `test wait for keypress and store in vx`() {
-        keyboard.key = Chip8Key.A
+        keyboard.key = 1u.rotateLeft(0xA).toUShort()
         memory.setDelayTimer(100.toUByte())
         val operation = cpu.interpretInstruction(0xF20A)
         operation.assertType<WaitForKeyPressAndStoreInVx>()

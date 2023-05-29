@@ -1,8 +1,9 @@
 package com.afewroosloose.chip8
 
 import com.afewroosloose.chip8.operation.*
+import com.afewroosloose.chip8.util.printAsSymbols
 
-class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
+class Cpu(private val memory: Memory, private val keyboard: Keyboard, private val display : Display) {
     fun interpretInstruction(operation: Int): Operation? {
         when (operation and 0xF000 shr 12) {
             0 -> {
@@ -157,7 +158,11 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
                 val y = operation shr 4 and 0x0F
                 val n = operation and 0x0F
 
-                return Draw(x, y, n)
+                try {
+                    return Draw(x, y, n)
+                } finally {
+                    display.draw(memory.getScreenBuffer())
+                }
             }
 
             0xE -> {
@@ -224,6 +229,10 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard) {
             if (instruction !is JumpingOperation) {
                 memory.setProgramCounter((memory.getProgramCounter() + 2u).toUShort())
             }
+            if (memory.getDelayTimer() != 0u.toUByte()) {
+                memory.setDelayTimer((memory.getDelayTimer()- 1u).toUByte())
+            }
+            Thread.sleep(5)
         }
     }
 }
