@@ -339,9 +339,6 @@ class Draw(private val x: Int, private val y: Int, private val n: Int): Operatio
             screenBuffer[currentRowWrapped] = currentRowXor
         }
         memory.setV(0xF, if (collision) 1 else 0)
-        screenBuffer.forEach {
-            it.printAsSymbols()
-        }
         memory.setScreenBuffer(screenBuffer)
     }
 }

@@ -6,18 +6,15 @@ import com.afewroosloose.chip8.Keyboard
 import com.afewroosloose.chip8.Memory
 import com.afewroosloose.chip8driver.io.Chip8Keyboard
 
-class HomeViewModel(display: Display) {
+class HomeViewModel(private val display: Display) {
     private val memory = Memory()
     internal val keyboard = Chip8Keyboard()
 
     private val cpu = Cpu(memory, keyboard, display)
 
     fun loadRom(fileBytes: ByteArray) {
+        display.draw(Array<ULong>(32) { 0u })
         memory.load(fileBytes.toUByteArray())
-        Thread(object: Runnable {
-            override fun run() {
-                cpu.execute()
-            }
-        }).start()
+        cpu.execute()
     }
 }

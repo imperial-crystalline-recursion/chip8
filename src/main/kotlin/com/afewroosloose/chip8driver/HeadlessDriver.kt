@@ -22,7 +22,6 @@ import com.afewroosloose.chip8.Memory
                 override fun draw(screenBuffer: Array<ULong>) {
 
                 }
-
             })
 
             val rom = memory::class.java.classLoader.getResourceAsStream("flags.ch8").readBytes().toUByteArray()

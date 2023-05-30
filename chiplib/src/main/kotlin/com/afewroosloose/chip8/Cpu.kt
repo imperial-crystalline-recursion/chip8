@@ -1,7 +1,6 @@
 package com.afewroosloose.chip8
 
 import com.afewroosloose.chip8.operation.*
-import com.afewroosloose.chip8.util.printAsSymbols
 
 class Cpu(private val memory: Memory, private val keyboard: Keyboard, private val display : Display) {
     fun interpretInstruction(operation: Int): Operation? {
@@ -158,11 +157,9 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard, private va
                 val y = operation shr 4 and 0x0F
                 val n = operation and 0x0F
 
-                try {
-                    return Draw(x, y, n)
-                } finally {
-                    display.draw(memory.getScreenBuffer())
-                }
+                memory.setDrawFlag()
+                return Draw(x, y, n)
+
             }
 
             0xE -> {
@@ -223,16 +220,22 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard, private va
 
     fun execute() {
         while(true) {
+            val currentTime = System.currentTimeMillis()
             val opcode = memory.getInstruction()
             val instruction = interpretInstruction(opcode.toInt())
             instruction?.execute(memory)
+            if (memory.getAndClearDrawFlag()) {
+                display.draw(memory.getScreenBuffer())
+            }
             if (instruction !is JumpingOperation) {
                 memory.setProgramCounter((memory.getProgramCounter() + 2u).toUShort())
             }
             if (memory.getDelayTimer() != 0u.toUByte()) {
                 memory.setDelayTimer((memory.getDelayTimer()- 1u).toUByte())
             }
-            Thread.sleep(5)
+            Thread.sleep(1)
+            val finalTime = System.currentTimeMillis()
+            println("execution time was ${finalTime - currentTime}")
         }
     }
 }

@@ -8,16 +8,20 @@ class Chip8Keyboard: Keyboard, KeyListener {
     private var pressedKeys: UShort = 0u
     private var heldKeys: UShort = 0u
     private var releasedKeys: UShort = 0u
+    private var waiting = false
 
     override fun getPressedKey(): UShort {
         return pressedKeys
     }
 
     override fun waitForKeyPress(): UShort {
-        while (pressedKeys == 0u.toUShort()) {
+        waiting = true
+        while (releasedKeys == 0u.toUShort()) {
             Thread.sleep(10)
         }
-        return pressedKeys
+        val value = releasedKeys
+        releasedKeys = 0u
+        return value
     }
 
     override fun keyTyped(e: KeyEvent?) {
@@ -27,13 +31,24 @@ class Chip8Keyboard: Keyboard, KeyListener {
     override fun keyPressed(e: KeyEvent?) {
         println("pressed key ${e?.keyChar}")
         val index = keys.indexOf(e?.keyChar?.lowercaseChar())
-        pressedKeys = pressedKeys xor 0x01.toUShort().rotateLeft(index)
+        val mask =  0x01.toUShort().rotateLeft(index)
+        if (pressedKeys and mask == 0u.toUShort()) {
+            pressedKeys = pressedKeys xor mask
+        }
+        println("Pressed key array is ${pressedKeys.toString(2).padEnd(16, '0')}")
     }
 
     override fun keyReleased(e: KeyEvent?) {
         println("released key ${e?.keyChar}")
         val index = keys.indexOf(e?.keyChar?.lowercaseChar())
-        pressedKeys = pressedKeys xor 0x01.toUShort().rotateLeft(index)
+        val mask =  0x01.toUShort().rotateLeft(index)
+        if (pressedKeys and mask != 0u.toUShort()) {
+            pressedKeys = pressedKeys xor mask
+        }
+        if (waiting) {
+            releasedKeys = mask
+        }
+        println("Pressed key array is ${pressedKeys.toString(2).padEnd(16, '0')}")
     }
 
     companion object {

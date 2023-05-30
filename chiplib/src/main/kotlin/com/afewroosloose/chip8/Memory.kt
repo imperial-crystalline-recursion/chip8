@@ -17,6 +17,7 @@ class Memory() {
         private const val SCREEN_END = (64 * 32) / 8
     }
 
+    private var draw: Boolean = false
     private val memory = UByteArray(MEMORY_SIZE) { 0.toUByte() }
     private val registers = UByteArray(NUMBER_OF_REGISTERS) { 0.toUByte() }
 
@@ -44,12 +45,34 @@ class Memory() {
     }
 
     fun load(byteArray: UByteArray) {
+        resetState()
+
+        initInterpreter()
         if (byteArray.size > MEMORY_SIZE - PROGRAM_START) {
             throw InvalidProgramSizeException()
         }
         byteArray.forEachIndexed { index, byte ->
             memory[index + PROGRAM_START] = byte
         }
+    }
+
+    private fun resetState() {
+        for (i in memory.indices) {
+            memory[i] = 0u
+        }
+        for (i in screenBuffer.indices) {
+            screenBuffer[i] = 0u
+        }
+        for (i in registers.indices) {
+            registers[i] = 0u
+        }
+        stack2.clear()
+        dt = 0u
+        st = 0u
+        i = 0u
+        pc = 0u
+        sp = 0
+        draw = false
     }
 
     fun getMemory() = memory.copyOf()
@@ -143,5 +166,15 @@ class Memory() {
 
     fun setScreenBuffer(screenBuffer: Array<ULong>) {
         this.screenBuffer = screenBuffer
+    }
+
+    fun setDrawFlag() {
+        draw = true
+    }
+
+    fun getAndClearDrawFlag(): Boolean {
+        val flag = draw
+        draw = false
+        return flag
     }
 }
