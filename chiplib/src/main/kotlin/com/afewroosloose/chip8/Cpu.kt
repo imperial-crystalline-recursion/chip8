@@ -147,7 +147,7 @@ class Cpu(private val memory: Memory, private val keyboard: Keyboard, private va
 
             0xC -> {
                 val x = (operation and 0xF00) shr 8
-                val kk = (operation and 0xFF).toUByte()
+                val kk: UByte = (operation and 0xFF).toUByte()
                 return RandomIntoVx(x, kk)
             }
 

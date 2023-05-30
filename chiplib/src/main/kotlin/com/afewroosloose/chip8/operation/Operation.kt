@@ -313,30 +313,22 @@ class LoadV0ToVxFromAddressPointedToByI(private val x: Int): Operation {
 class Draw(private val x: Int, private val y: Int, private val n: Int): Operation {
     override fun execute(memory: Memory) {
         val i = memory.getI().toInt()
-        val sprite = Array<UByte>(n) { 0u }
-
         val vy = memory.getV(y).toInt()
         val vx = memory.getV(x).toInt()
-
         val memoryArray = memory.getMemory()
-
-        // load index
-        for (index in 0 until n) {
-            sprite[index] = memoryArray[index + i]
-        }
-
         val screenBuffer = memory.getScreenBuffer()
 
         var collision = false
-        sprite.forEachIndexed { idx, row ->
-            val rowAsUInt = row.toULong().rotateRight(vx + 8)
-            val currentRowWrapped = (idx + vy) % 32
-            val currentRowSum = screenBuffer[currentRowWrapped] + rowAsUInt
-            val currentRowXor = screenBuffer[currentRowWrapped] xor rowAsUInt
-            if (currentRowSum != currentRowXor) {
-                collision = true
-            }
-            screenBuffer[currentRowWrapped] = currentRowXor
+        for (idx in 0 until n) {
+            val row = memoryArray[idx + i]
+                val rowAsUInt = row.toULong().rotateRight(vx + 8)
+                val currentRowWrapped = (idx + vy) % 32
+                val currentRowSum = screenBuffer[currentRowWrapped] + rowAsUInt
+                val currentRowXor = screenBuffer[currentRowWrapped] xor rowAsUInt
+                if (currentRowSum != currentRowXor) {
+                    collision = true
+                }
+                screenBuffer[currentRowWrapped] = currentRowXor
         }
         memory.setV(0xF, if (collision) 1 else 0)
         memory.setScreenBuffer(screenBuffer)
